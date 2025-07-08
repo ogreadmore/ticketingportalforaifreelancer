@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit a New Ticket</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Use Inter as the default font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple transition for button hover */
+        .submit-btn {
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden my-8">
+        <div id="form-container">
+            <div class="p-8">
+                <h1 class="text-2xl font-bold text-gray-900">Submit a New Ticket</h1>
+                <p class="mt-2 text-sm text-gray-600">Please fill out the form below to submit a task for the AI Freelancer board.</p>
+            </div>
+            <form id="ticket-form" class="px-8 pb-8">
+                <!-- Ticket Title -->
+                <div class="mb-5">
+                    <label for="ticketTitle" class="block mb-2 text-sm font-medium text-gray-700">Ticket Title</label>
+                    <input type="text" id="ticketTitle" name="ticketTitle" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="e.g., Create a new landing page design" required>
+                </div>
+
+                <!-- Description/Details -->
+                <div class="mb-5">
+                    <label for="description" class="block mb-2 text-sm font-medium text-gray-700">Description / Details</label>
+                    <textarea id="description" name="description" rows="6" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Provide as much detail as possible..." required></textarea>
+                </div>
+
+                <!-- Priority -->
+                <div class="mb-5">
+                    <label for="priority" class="block mb-2 text-sm font-medium text-gray-700">Priority</label>
+                    <select id="priority" name="priority" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        <option>Medium</option>
+                        <option>High</option>
+                        <option>Low</option>
+                    </select>
+                </div>
+                
+                <!-- Submitter Name & Email -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="name" class="block mb-2 text-sm font-medium text-gray-700">Your Name</label>
+                        <input type="text" id="name" name="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Jane Doe" required>
+                    </div>
+                    <div>
+                        <label for="email" class="block mb-2 text-sm font-medium text-gray-700">Your Email</label>
+                        <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="jane.doe@example.com" required>
+                    </div>
+                </div>
+
+                <!-- Status (Hidden Field) -->
+                <input type="hidden" id="status" name="status" value="New">
+
+                <!-- Submission Feedback -->
+                <div id="submission-feedback" class="text-sm text-red-600 mb-4"></div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submit-button" class="submit-btn text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">
+                    Submit Ticket
+                </button>
+            </form>
+        </div>
+
+        <!-- Thank You Message -->
+        <div id="thank-you-message" class="hidden p-8 text-center">
+             <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="mt-4 text-2xl font-bold text-gray-900">Thank You!</h2>
+            <p class="mt-2 text-gray-600">Your ticket has been submitted successfully.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- FORM SUBMISSION LOGIC ---
+
+        const form = document.getElementById('ticket-form');
+        const submitButton = document.getElementById('submit-button');
+        const submissionFeedback = document.getElementById('submission-feedback');
+        
+        form.addEventListener('submit', async function(event) {
+            // Prevent the default browser form submission behavior
+            event.preventDefault();
+
+            // --- IMPORTANT: CUSTOMIZE YOUR WEBHOOK URL HERE ---
+            // Replace the placeholder URL below with your actual webhook URL from Zapier, Make, or any other service.
+            const webhookUrl = 'https://your-webhook-url.com/example';
+            // ----------------------------------------------------
+
+            // Show loading state on button
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+            submissionFeedback.textContent = '';
+
+            // Create a FormData object to easily access form fields
+            const formData = new FormData(form);
+
+            // Construct the JSON payload with clean variable names
+            // These keys should match the column names in your Notion board for easy mapping.
+            const payload = {
+                ticketTitle: formData.get('ticketTitle'),
+                description: formData.get('description'),
+                priority: formData.get('priority'),
+                status: formData.get('status'), // This is from the hidden field, defaults to "New"
+                name: formData.get('name'),
+                email: formData.get('email')
+            };
+
+            try {
+                // Send the data to the webhook URL using the Fetch API
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (response.ok) {
+                    // If the submission is successful, show the thank you message
+                    document.getElementById('form-container').classList.add('hidden');
+                    document.getElementById('thank-you-message').classList.remove('hidden');
+                } else {
+                    // If the server responds with an error, display it
+                    const errorData = await response.json();
+                    throw new Error(`Server responded with ${response.status}: ${errorData.message || 'Unknown error'}`);
+                }
+
+            } catch (error) {
+                // If there's a network error or other issue with the fetch call
+                console.error('Submission Error:', error);
+                submissionFeedback.textContent = 'Failed to submit ticket. Please check the console for details or try again later.';
+                // Re-enable the button so the user can try again
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Ticket';
+            }
+        });
+    </script>
+
+</body>
+</html>
