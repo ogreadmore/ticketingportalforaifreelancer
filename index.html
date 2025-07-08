@@ -42,6 +42,13 @@
                     <textarea id="description" name="description" rows="6" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Provide as much detail as possible..." required></textarea>
                 </div>
 
+                <!-- Attachments -->
+                <div class="mb-5">
+                    <label for="attachments" class="block mb-2 text-sm font-medium text-gray-700">Attachments (Optional)</label>
+                    <input type="file" id="attachments" name="attachments" multiple class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none file:bg-gray-200 file:text-gray-700 file:border-0 file:px-4 file:py-2.5 file:mr-4 file:cursor-pointer">
+                    <p class="mt-1 text-xs text-gray-500">You can upload multiple files.</p>
+                </div>
+
                 <!-- Priority -->
                 <div class="mb-5">
                     <label for="priority" class="block mb-2 text-sm font-medium text-gray-700">Priority</label>
@@ -98,38 +105,25 @@
             // Prevent the default browser form submission behavior
             event.preventDefault();
 
-            // --- IMPORTANT: CUSTOMIZE YOUR WEBHOOK URL HERE ---
             // This URL has been updated with the one you provided.
             const webhookUrl = 'https://hook.us2.make.com/1ufm2ptvymqkyme8vvc9wzwp786uhu9e';
-            // ----------------------------------------------------
-
+            
             // Show loading state on button
             submitButton.disabled = true;
             submitButton.textContent = 'Submitting...';
             submissionFeedback.textContent = '';
 
-            // Create a FormData object to easily access form fields
+            // FormData will handle all form fields, including files.
+            // The browser will automatically set the Content-Type to multipart/form-data.
             const formData = new FormData(form);
-
-            // Construct the JSON payload with clean variable names
-            // These keys should match the column names in your Notion board for easy mapping.
-            const payload = {
-                ticketTitle: formData.get('ticketTitle'),
-                description: formData.get('description'),
-                priority: formData.get('priority'),
-                status: formData.get('status'), // This is from the hidden field, defaults to "New"
-                name: formData.get('name'),
-                email: formData.get('email')
-            };
 
             try {
                 // Send the data to the webhook URL using the Fetch API
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
+                    // DO NOT set the 'Content-Type' header when using FormData.
+                    // The browser will set it automatically with the correct boundary.
+                    body: formData,
                 });
 
                 if (response.ok) {
@@ -138,7 +132,7 @@
                     document.getElementById('thank-you-message').classList.remove('hidden');
                 } else {
                     // If the server responds with an error, display it
-                    const errorData = await response.json();
+                    const errorData = await response.json().catch(() => ({ message: 'Could not parse error response.' }));
                     throw new Error(`Server responded with ${response.status}: ${errorData.message || 'Unknown error'}`);
                 }
 
